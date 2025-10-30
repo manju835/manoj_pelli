@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Movable Shooter Game (Target Movement + Hit Text)</title>
+  <title>Movable Shooter Game (Mobile Controls)</title>
   <style>
     body {
       margin: 0;
@@ -12,6 +12,7 @@
       align-items: center;
       height: 100vh;
       background-color: #111;
+      flex-direction: column;
     }
 
     #gameArea {
@@ -21,6 +22,7 @@
       background-color: #333;
       overflow: hidden;
       border: 3px solid #fff;
+      margin-bottom: 20px;
     }
 
     /* Shooter is an image */
@@ -68,6 +70,33 @@
       transform: translate(-50%, -50%);
       visibility: hidden; /* Initially hidden */
     }
+
+    /* Mobile Controls */
+    #mobileControls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .controlButton {
+      width: 60px;
+      height: 60px;
+      background-color: #444;
+      border-radius: 50%;
+      color: white;
+      font-size: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #shootButton {
+      background-color: #ff0;
+      font-size: 20px;
+    }
   </style>
 </head>
 <body>
@@ -80,6 +109,15 @@
 
     <!-- Replace with your own target image URL -->
     <img id="target" src="samba.jpeg" alt="Target">
+  </div>
+
+  <!-- Mobile Control Buttons -->
+  <div id="mobileControls">
+    <div class="controlButton" id="leftButton">←</div>
+    <div class="controlButton" id="upButton">↑</div>
+    <div class="controlButton" id="downButton">↓</div>
+    <div class="controlButton" id="rightButton">→</div>
+    <div class="controlButton" id="shootButton">Shoot</div>
   </div>
 
   <script>
@@ -95,26 +133,26 @@
     const moveSpeed = 10;
     const projectileSpeed = 15;
 
-    // Shooter movement
-    document.addEventListener('keydown', (e) => {
+    // Move shooter with virtual buttons
+    document.getElementById('upButton').addEventListener('click', () => moveShooter(0, moveSpeed));
+    document.getElementById('downButton').addEventListener('click', () => moveShooter(0, -moveSpeed));
+    document.getElementById('leftButton').addEventListener('click', () => moveShooter(-moveSpeed, 0));
+    document.getElementById('rightButton').addEventListener('click', () => moveShooter(moveSpeed, 0));
+
+    // Shoot button
+    document.getElementById('shootButton').addEventListener('click', shootProjectile);
+
+    // Function to move the shooter
+    function moveShooter(dx, dy) {
       const maxX = gameArea.offsetWidth - shooter.offsetWidth;
       const maxY = gameArea.offsetHeight - shooter.offsetHeight;
 
-      if (e.key === 'ArrowUp') {
-        shooterY = Math.min(maxY, shooterY + moveSpeed);
-      } else if (e.key === 'ArrowDown') {
-        shooterY = Math.max(0, shooterY - moveSpeed);
-      } else if (e.key === 'ArrowLeft') {
-        shooterX = Math.max(0, shooterX - moveSpeed);
-      } else if (e.key === 'ArrowRight') {
-        shooterX = Math.min(maxX, shooterX + moveSpeed);
-      } else if (e.key === ' ') {
-        shootProjectile();
-      }
+      shooterX = Math.min(maxX, Math.max(0, shooterX + dx));
+      shooterY = Math.min(maxY, Math.max(0, shooterY + dy));
 
       shooter.style.left = `${shooterX}px`;
       shooter.style.bottom = `${shooterY}px`;
-    });
+    }
 
     // Shooting logic (now using an image for the projectile)
     function shootProjectile() {
