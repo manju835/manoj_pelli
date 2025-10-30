@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Movable Shooter Game (Target Movement + Hit Text)</title>
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #111;
+    }
+
+    #gameArea {
+      position: relative;
+      width: 800px;
+      height: 500px;
+      background-color: #333;
+      overflow: hidden;
+      border: 3px solid #fff;
+    }
+
+    /* Shooter is an image */
+    #shooter {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      left: 50px;
+      bottom: 50px;
+      object-fit: contain;
+    }
+
+    /* Target is also an image */
+    #target {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+    }
+
+    /* Bullet is now an image */
+    .projectile {
+      position: absolute;
+      width: 60px;
+      height: 60px;
+      object-fit: contain;
+    }
+
+    #scoreboard {
+      color: white;
+      font-family: Arial, sans-serif;
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 20px;
+    }
+
+    /* The text that will appear when the target is hit */
+    #hitText {
+      color: white;
+      font-size: 40px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      visibility: hidden; /* Initially hidden */
+    }
+  </style>
+</head>
+<body>
+  <div id="gameArea">
+    <div id="scoreboard">Score: 0</div>
+    <h1 id="hitText">Naveen hit</h1>
+
+    <!-- Replace with your own shooter image URL -->
+    <img id="shooter" src="manoj_face.jpeg" alt="Shooter">
+
+    <!-- Replace with your own target image URL -->
+    <img id="target" src="samba.jpeg" alt="Target">
+  </div>
+
+  <script>
+    const shooter = document.getElementById('shooter');
+    const target = document.getElementById('target');
+    const gameArea = document.getElementById('gameArea');
+    const scoreboard = document.getElementById('scoreboard');
+    const hitText = document.getElementById('hitText');
+
+    let shooterX = 50;
+    let shooterY = 50;
+    let score = 0;
+    const moveSpeed = 10;
+    const projectileSpeed = 15;
+
+    // Shooter movement
+    document.addEventListener('keydown', (e) => {
+      const maxX = gameArea.offsetWidth - shooter.offsetWidth;
+      const maxY = gameArea.offsetHeight - shooter.offsetHeight;
+
+      if (e.key === 'ArrowUp') {
+        shooterY = Math.min(maxY, shooterY + moveSpeed);
+      } else if (e.key === 'ArrowDown') {
+        shooterY = Math.max(0, shooterY - moveSpeed);
+      } else if (e.key === 'ArrowLeft') {
+        shooterX = Math.max(0, shooterX - moveSpeed);
+      } else if (e.key === 'ArrowRight') {
+        shooterX = Math.min(maxX, shooterX + moveSpeed);
+      } else if (e.key === ' ') {
+        shootProjectile();
+      }
+
+      shooter.style.left = `${shooterX}px`;
+      shooter.style.bottom = `${shooterY}px`;
+    });
+
+    // Shooting logic (now using an image for the projectile)
+    function shootProjectile() {
+      const projectile = document.createElement('img');
+      projectile.classList.add('projectile');
+      gameArea.appendChild(projectile);
+
+      // Use your own projectile image URL
+      projectile.src = "./naveen.jpeg";
+      
+      let projectileX = shooterX + shooter.offsetWidth / 2 - 30; // Centers the projectile horizontally
+      let projectileY = shooterY + shooter.offsetHeight / 2 - 30; // Centers the projectile vertically
+
+      projectile.style.left = `${projectileX}px`;
+      projectile.style.bottom = `${projectileY}px`;
+
+      const interval = setInterval(() => {
+        projectileX += projectileSpeed;
+        projectile.style.left = `${projectileX}px`;
+
+        // Collision detection
+        if (checkCollision(projectile, target)) {
+          clearInterval(interval);
+          projectile.remove();
+          score++;
+          scoreboard.textContent = `Score: ${score}`;
+          displayHitText();
+          moveTarget(); // Move target to a new random position
+        }
+
+        // Remove projectile when offscreen
+        if (projectileX > gameArea.offsetWidth) {
+          clearInterval(interval);
+          projectile.remove();
+        }
+      }, 20);
+    }
+
+    // Collision check
+    function checkCollision(a, b) {
+      const aRect = a.getBoundingClientRect();
+      const bRect = b.getBoundingClientRect();
+      return !(
+        aRect.top > bRect.bottom ||
+        aRect.bottom < bRect.top ||
+        aRect.left > bRect.right ||
+        aRect.right < bRect.left
+      );
+    }
+
+    // Move target to a new random spot
+    function moveTarget() {
+      const maxX = gameArea.offsetWidth - target.offsetWidth;
+      const maxY = gameArea.offsetHeight - target.offsetHeight;
+      target.style.left = `${Math.random() * maxX}px`;
+      target.style.top = `${Math.random() * maxY}px`;
+    }
+
+    // Show "Naveen hit" text for 1 second
+    function displayHitText() {
+      hitText.style.visibility = 'visible';
+      setTimeout(() => {
+        hitText.style.visibility = 'hidden';
+      }, 1000); // Text will disappear after 1 second
+    }
+
+    // Move the target randomly every 2 seconds (independently of being hit)
+    setInterval(moveTarget, 2000);
+  </script>
+</body>
+</html>
