@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Movable Shooter Game (Mobile Controls)</title>
+  <title>Movable Shooter Game (Joystick and Shoot)</title>
   <style>
     body {
       margin: 0;
@@ -13,112 +13,178 @@
       height: 100vh;
       background-color: #111;
       flex-direction: column;
+      font-family: Arial, sans-serif;
+      overflow: hidden;
     }
 
     #gameArea {
       position: relative;
-      width: 800px;
-      height: 500px;
+      width: 90vw;
+      height: 70vh;
       background-color: #333;
       overflow: hidden;
       border: 3px solid #fff;
       margin-bottom: 20px;
     }
 
-    /* Shooter is an image */
     #shooter {
       position: absolute;
-      width: 60px;
-      height: 60px;
-      left: 50px;
-      bottom: 50px;
+      width: 15vw;
+      height: 15vw;
+      left: 5vw;
+      bottom: 5vh;
       object-fit: contain;
     }
 
-    /* Target is also an image */
     #target {
       position: absolute;
-      width: 60px;
-      height: 60px;
+      width: 10vw;
+      height: 10vw;
       object-fit: contain;
     }
 
-    /* Bullet is now an image */
     .projectile {
       position: absolute;
-      width: 60px;
-      height: 60px;
+      width: 10vw;
+      height: 10vw;
       object-fit: contain;
     }
 
     #scoreboard {
       color: white;
-      font-family: Arial, sans-serif;
       position: absolute;
-      top: 10px;
-      left: 10px;
-      font-size: 20px;
+      top: 2vh;
+      left: 2vw;
+      font-size: 3vw;
     }
 
-    /* The text that will appear when the target is hit */
     #hitText {
       color: white;
-      font-size: 40px;
+      font-size: 8vw;
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      visibility: hidden; /* Initially hidden */
+      visibility: hidden;
     }
 
-    /* Mobile Controls */
+    #gameOverText {
+      color: red;
+      font-size: 6vw;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      visibility: hidden;
+    }
+
+    /* Mobile joystick & shoot controls */
     #mobileControls {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      margin-top: 20px;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
     }
 
-    .controlButton {
-      width: 60px;
-      height: 60px;
-      background-color: #444;
+    /* Joystick base (right side now) */
+    #joystickBase {
+      position: absolute;
+      bottom: 10vh;
+      right: 5vw;
+      width: 15vw;
+      height: 15vw;
+      background-color: rgba(255, 255, 255, 0.1);
+      border: 2px solid #fff;
       border-radius: 50%;
-      color: white;
-      font-size: 20px;
+      pointer-events: auto;
+      touch-action: none;
+    }
+
+    /* Joystick knob */
+    #joystick {
+      position: absolute;
+      width: 6vw;
+      height: 6vw;
+      background-color: rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      touch-action: none;
+    }
+
+    /* Shoot button (left side now) */
+    #shootButton {
+      position: absolute;
+      bottom: 10vh;
+      left: 5vw;
+      width: 12vw;
+      height: 12vw;
+      background-color: rgba(255, 255, 0, 0.8);
+      border-radius: 50%;
       display: flex;
       justify-content: center;
       align-items: center;
-      cursor: pointer;
+      font-size: 4vw;
+      font-weight: bold;
+      color: #111;
+      pointer-events: auto;
+      touch-action: none;
+      box-shadow: 0 0 10px #ff0;
       user-select: none;
     }
 
-    #shootButton {
-      background-color: #ff0;
-      font-size: 20px;
+    #shootButton:active {
+      background-color: #ffea00;
     }
+
+    /* Explosion animation */
+    .explosion {
+      position: absolute;
+      width: 15vw;
+      height: 15vw;
+      background-color: rgba(255, 0, 0, 0.5);
+      border-radius: 50%;
+      animation: explosionEffect 0.5s ease-out forwards;
+    }
+
+    @keyframes explosionEffect {
+      0% {
+        transform: scale(0);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(3);
+        opacity: 0;
+      }
+    }
+
   </style>
 </head>
 <body>
   <div id="gameArea">
     <div id="scoreboard">Score: 0</div>
     <h1 id="hitText">Naveen hit</h1>
+    <h1 id="gameOverText">Game Over</h1>
 
-    <!-- Replace with your own shooter image URL -->
     <img id="shooter" src="manoj_face.jpeg" alt="Shooter">
-
-    <!-- Replace with your own target image URL -->
     <img id="target" src="samba.jpeg" alt="Target">
   </div>
 
-  <!-- Mobile Control Buttons -->
+  <!-- Joystick and Shoot Controls -->
   <div id="mobileControls">
-    <div class="controlButton" id="leftButton">←</div>
-    <div class="controlButton" id="upButton">↑</div>
-    <div class="controlButton" id="downButton">↓</div>
-    <div class="controlButton" id="rightButton">→</div>
-    <div class="controlButton" id="shootButton">Shoot</div>
+    <div id="joystickBase">
+      <div id="joystick"></div>
+    </div>
+    <div id="shootButton">SHOOT</div>
   </div>
+
+  <!-- Add the explosion sound -->
+  <audio id="explosionSound" src="./boom.mp3" preload="auto"></audio>
+  <audio id="gunshot" src="./gun_shot.mp3" preload="auto"></audio>
+  <audio id="gameover" src="./game-over-arcade-6435.mp3" preload="auto"></audio>
 
   <script>
     const shooter = document.getElementById('shooter');
@@ -126,72 +192,132 @@
     const gameArea = document.getElementById('gameArea');
     const scoreboard = document.getElementById('scoreboard');
     const hitText = document.getElementById('hitText');
+    const gameOverText = document.getElementById('gameOverText');
+    const joystickBase = document.getElementById('joystickBase');
+    const joystick = document.getElementById('joystick');
+    const shootButton = document.getElementById('shootButton');
 
-    let shooterX = 50;
-    let shooterY = 50;
+    let shooterX = 5; // starting position in vw
+    let shooterY = 5; // starting position in vh
     let score = 0;
-    const moveSpeed = 10;
-    const projectileSpeed = 15;
+    const projectileSpeed = 0.7; // Scaled speed
+    const moveSpeed = 0.5; // Scaled movement
 
-    // Move shooter with virtual buttons
-    document.getElementById('upButton').addEventListener('click', () => moveShooter(0, moveSpeed));
-    document.getElementById('downButton').addEventListener('click', () => moveShooter(0, -moveSpeed));
-    document.getElementById('leftButton').addEventListener('click', () => moveShooter(-moveSpeed, 0));
-    document.getElementById('rightButton').addEventListener('click', () => moveShooter(moveSpeed, 0));
+    let joystickActive = false;
+    let joystickCenter = { x: 0, y: 0 };
+    let joystickPos = { x: 0, y: 0 };
 
-    // Shoot button
-    document.getElementById('shootButton').addEventListener('click', shootProjectile);
+    // Target flying direction
+    let targetX = Math.random() * (gameArea.offsetWidth - target.offsetWidth);
+    let targetY = Math.random() * (gameArea.offsetHeight - target.offsetHeight);
+    let targetDx = Math.random() * 0.5 - 0.25; // Random speed for X
+    let targetDy = Math.random() * 0.5 - 0.25; // Random speed for Y
 
-    // Function to move the shooter
-    function moveShooter(dx, dy) {
+    function updateShooterPosition() {
       const maxX = gameArea.offsetWidth - shooter.offsetWidth;
       const maxY = gameArea.offsetHeight - shooter.offsetHeight;
 
-      shooterX = Math.min(maxX, Math.max(0, shooterX + dx));
-      shooterY = Math.min(maxY, Math.max(0, shooterY + dy));
+      // Prevent shooter from going out of bounds (top, bottom, left, and right)
+      shooterX = Math.min(maxX, Math.max(0, shooterX + joystickPos.x * moveSpeed));
+      shooterY = Math.min(maxY, Math.max(0, shooterY - joystickPos.y * moveSpeed));
 
-      shooter.style.left = `${shooterX}px`;
-      shooter.style.bottom = `${shooterY}px`;
+      shooter.style.left = `${shooterX}vw`;
+      shooter.style.bottom = `${shooterY}vh`;
     }
 
-    // Shooting logic (now using an image for the projectile)
-    function shootProjectile() {
-      const projectile = document.createElement('img');
-      projectile.classList.add('projectile');
-      gameArea.appendChild(projectile);
+    // Joystick control logic
+    joystickBase.addEventListener('touchstart', (e) => {
+      joystickActive = true;
+      const rect = joystickBase.getBoundingClientRect();
+      joystickCenter = {
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2
+      };
+    });
 
-      // Use your own projectile image URL
-      projectile.src = "./naveen.jpeg";
-      
-      let projectileX = shooterX + shooter.offsetWidth / 2 - 30; // Centers the projectile horizontally
-      let projectileY = shooterY + shooter.offsetHeight / 2 - 30; // Centers the projectile vertically
+    joystickBase.addEventListener('touchmove', (e) => {
+      if (!joystickActive) return;
+      const touch = e.touches[0];
+      const dx = touch.clientX - joystickCenter.x;
+      const dy = touch.clientY - joystickCenter.y;
+      const distance = Math.min(5, Math.sqrt(dx * dx + dy * dy));
+      const angle = Math.atan2(dy, dx);
 
-      projectile.style.left = `${projectileX}px`;
-      projectile.style.bottom = `${projectileY}px`;
+      joystick.style.left = `${30 + Math.cos(angle) * distance}px`;
+      joystick.style.top = `${30 + Math.sin(angle) * distance}px`;
 
-      const interval = setInterval(() => {
-        projectileX += projectileSpeed;
-        projectile.style.left = `${projectileX}px`;
+      joystickPos.x = Math.cos(angle) * (distance / 5);
+      joystickPos.y = Math.sin(angle) * (distance / 5);
 
-        // Collision detection
-        if (checkCollision(projectile, target)) {
-          clearInterval(interval);
-          projectile.remove();
-          score++;
-          scoreboard.textContent = `Score: ${score}`;
-          displayHitText();
-          moveTarget(); // Move target to a new random position
-        }
+      updateShooterPosition();
+    });
 
-        // Remove projectile when offscreen
-        if (projectileX > gameArea.offsetWidth) {
-          clearInterval(interval);
-          projectile.remove();
-        }
-      }, 20);
+    joystickBase.addEventListener('touchend', () => {
+      joystickActive = false;
+      joystickPos = { x: 0, y: 0 };
+      joystick.style.left = '30px';
+      joystick.style.top = '30px';
+    });
+
+    // Shoot logic
+    shootButton.addEventListener('touchstart', shootProjectile);
+    shootButton.addEventListener('click', shootProjectile);
+
+    let isShooting = false; // Flag to ensure the sound is played only once per shot
+
+function shootProjectile() {
+  // Check if the gunshot has already been played (this prevents the sound from playing on rapid clicks)
+  if (isShooting) return;
+
+  // Set the flag to true to indicate a shot is being fired
+  isShooting = true;
+
+  // Create the projectile and add it to the game
+  const projectile = document.createElement('img');
+  projectile.classList.add('projectile');
+  gameArea.appendChild(projectile);
+  projectile.src = "./naveen.jpeg";
+
+  let projectileX = shooterX;
+  let projectileY = shooterY;
+  projectile.style.left = `${projectileX}vw`;
+  projectile.style.bottom = `${projectileY}vh`;
+
+  // Play the gunshot sound
+  const gunshot = document.getElementById('gunshot');
+  gunshot.play();
+
+  // Set an interval for projectile movement
+  const interval = setInterval(() => {
+    projectileX += projectileSpeed;
+    projectile.style.left = `${projectileX}vw`;
+
+    // Check if the projectile hits the target
+    if (checkCollision(projectile, target)) {
+      clearInterval(interval);
+      projectile.remove();
+      score++;
+      scoreboard.textContent = `Score: ${score}`;
+      displayHitText();
+      explodeTarget();
+      resetTarget();
     }
 
-    // Collision check
+    // Remove the projectile if it moves out of bounds
+    if (projectileX > gameArea.offsetWidth) {
+      clearInterval(interval);
+      projectile.remove();
+    }
+  }, 20);
+
+  // Reset the isShooting flag after a short delay (to allow for multiple shots)
+  setTimeout(() => {
+    isShooting = false;
+  }, 500); // Delay is 500ms (can adjust to suit your game speed)
+}
+
+
+
     function checkCollision(a, b) {
       const aRect = a.getBoundingClientRect();
       const bRect = b.getBoundingClientRect();
@@ -203,24 +329,94 @@
       );
     }
 
-    // Move target to a new random spot
-    function moveTarget() {
-      const maxX = gameArea.offsetWidth - target.offsetWidth;
-      const maxY = gameArea.offsetHeight - target.offsetHeight;
-      target.style.left = `${Math.random() * maxX}px`;
-      target.style.top = `${Math.random() * maxY}px`;
+    function explodeTarget() {
+      const explosion = document.createElement('div');
+      explosion.classList.add('explosion');
+      gameArea.appendChild(explosion);
+
+      explosion.style.left = target.style.left;
+      explosion.style.top = target.style.top;
+
+    //   explsion sound
+      const explosionSound = document.getElementById('explosionSound');
+      explosionSound.play();
+
+      setTimeout(() => {
+        explosion.remove();
+      }, 500);
     }
 
-    // Show "Naveen hit" text for 1 second
     function displayHitText() {
       hitText.style.visibility = 'visible';
       setTimeout(() => {
         hitText.style.visibility = 'hidden';
-      }, 1000); // Text will disappear after 1 second
+      }, 1000);
     }
 
-    // Move the target randomly every 2 seconds (independently of being hit)
-    setInterval(moveTarget, 2000);
+    // Function to reset target to a new random position
+    function resetTarget() {
+      let newTargetX, newTargetY;
+      do {
+        newTargetX = Math.random() * (gameArea.offsetWidth - target.offsetWidth);
+        newTargetY = Math.random() * (gameArea.offsetHeight - target.offsetHeight);
+      } while (Math.abs(newTargetX - shooterX) < 10 && Math.abs(newTargetY - shooterY) < 10); // Ensure distance from shooter
+
+      targetX = newTargetX;
+      targetY = newTargetY;
+      target.style.left = `${targetX}px`;
+      target.style.top = `${targetY}px`;
+    }
+
+    // Game over logic
+    function checkGameOver() {
+      const targetRect = target.getBoundingClientRect();
+      const shooterRect = shooter.getBoundingClientRect();
+
+      if (
+        targetRect.top < shooterRect.bottom &&
+        targetRect.bottom > shooterRect.top &&
+        targetRect.left < shooterRect.right &&
+        targetRect.right > shooterRect.left
+      ) {
+        gameOverText.style.visibility = 'visible';
+        const gameover = document.getElementById('gameover');
+        gameover.play();
+        resetGame();
+      }
+    }
+
+    function resetGame() {
+      score = 0;
+      scoreboard.textContent = `Score: ${score}`;
+      shooterX = 5;
+      shooterY = 5;
+      resetTarget(); // Reset target to a new location
+      targetDx = Math.random() * 0.5 - 0.25;
+      targetDy = Math.random() * 0.5 - 0.25;
+
+      setTimeout(() => {
+        gameOverText.style.visibility = 'hidden';
+      }, 2000);
+    }
+
+    // Target flying logic
+    setInterval(() => {
+      targetX += targetDx;
+      targetY += targetDy;
+
+      // Ensure the target stays within the bounds of the game area
+      if (targetX < 0 || targetX > gameArea.offsetWidth - target.offsetWidth) {
+        targetDx *= -1;
+      }
+      if (targetY < 0 || targetY > gameArea.offsetHeight - target.offsetHeight) {
+        targetDy *= -1;
+      }
+
+      target.style.left = `${targetX}px`;
+      target.style.top = `${targetY}px`;
+    }, 20);
+
+    setInterval(checkGameOver, 20); // Check for collision with shooter
   </script>
 </body>
 </html>
